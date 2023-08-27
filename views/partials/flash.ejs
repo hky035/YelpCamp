@@ -1,0 +1,17 @@
+<!-- 업데이트나 생성 성공 실패 시 플래쉬 메시지를 부트스트랩의 alert로 띄움 -->
+<!-- success 가 있는 경우만 alert를 띄울 예정이니 if(success&& success.length)로 조건을 설정 / 그냥 success만 하면 빈 배열이긴 하지만 있다고 생각하고 출력하는 오류 발생 -->
+
+<% if(success && success.length){ %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= success %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
+
+        <!-- 에러 플래쉬 구문 GET/ campground/:id 에서 campground 못 찾을 경우 error 플래쉬를 발생하도록 함   -->
+        <% if(error && error.length){ %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <% } %>

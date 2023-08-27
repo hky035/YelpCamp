@@ -1,0 +1,66 @@
+<% layout('../layouts/boilerplate') %>
+
+
+    <div class="row">
+        <h1 class="text-center">Edit campground</h1>
+        <div class="col-6 offset-3">
+            <form action="/campgrounds/<%=campground._id%>?_method=PUT" method="POST" novalidate
+                class="needs-validation" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label" for="title">Title</label>
+                    <input class="form-control" type="text" name="campground[title]" id="title"
+                        value="<%=campground.title %>" required>
+                    <!-- name="campground[title]" 방식은 Post 요청에 의해 req.body로 데이터가 보내질 때 campground 아래 속해서 전달되는 것이다.  -->
+                    <!-- 콘텐츠를 그룹화해서 전달하기 좋은 방식이다.  -->
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="location">Location</label>
+                    <input class="form-control" type="text" name="campground[location]" id="location"
+                        value="<%= campground.location%>" required>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload Images</label>
+                    <input class="form-control" type="file" id="image" name="image" multiple>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="price">Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="price-label">$</span>
+                        <input type="text" class="form-control" name='campground[price]' id='price' placeholder="0.00"
+                            aria-label="price" aria-describedby="price-label" value="<%= campground.price%>" required>
+                        <!-- aria-describedby : span과 input을 연결 마치 lable과 input처럼 -->
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea class="form-control" type="text" name="campground[description]" id="description"
+                        <%=campground.description%> required></textarea>
+                    <!-- textarea에는 value 값을 줄 때 value= 를 적지 않는다. -->
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <% campground.images.forEach(function(img, i) { %>
+                        <img src="<%= img.url %>" alt="">
+                        <div class="form-check-inline">
+                            <input type="checkbox" id="img-<%= i %>" name="deleteImages[]" value="<%= img.filename %>">
+                            <!-- 서버 측에서 사진을 지우기 위해 filename을 알아야하니 value로 filename을 전달 -->
+                            <!-- UpdateCampgorund controller에서 console.log(req.body)를 해보면 알 수 있듯이 value 값이 deleteImages[]의 배열안에 들어간 것을 확인할 수가 있음 
+                                 이는 우리가 콘트롤러에서 deleteImages 안에 있는 각 이미지의 filename에 대해 접근할 수 있다는 것(삭제가 가능하다)-->
+                        </div>
+                        <label for="img-<%= i %>">Delete</label>
+                        <br>
+                        <% }) %>
+                </div>
+                <button class="btn btn-info mb-3">Edit Campground</button>
+            </form>
+            <a href="/campgrounds/<%= campground._id%>">Back To Campground</a>
+        </div>
+    </div>
