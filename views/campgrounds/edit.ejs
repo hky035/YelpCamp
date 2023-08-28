@@ -48,7 +48,7 @@
                 </div>
                 <div class="mb-3">
                     <% campground.images.forEach(function(img, i) { %>
-                        <img src="<%= img.url %>" alt="">
+                        <img src="<%= img.thumnail %>" alt="">
                         <div class="form-check-inline">
                             <input type="checkbox" id="img-<%= i %>" name="deleteImages[]" value="<%= img.filename %>">
                             <!-- 서버 측에서 사진을 지우기 위해 filename을 알아야하니 value로 filename을 전달 -->
