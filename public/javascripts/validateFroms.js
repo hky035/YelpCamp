@@ -3,7 +3,6 @@
     'use strict'
 
 
-    bsCustomFileInput.init();
 
     /* 
     querySelectorAll을 통해 현재 페이지에 class 속성으로 nedds-validation으로 설정된 폼을 다 찾고

@@ -1,5 +1,16 @@
 const Campground = require('../models/campground');
+
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
+/* import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+const geocoder = new MapboxGeocoder({
+    accessToken: process.env.MAPBOX_TOKEN,
+    mapboxgl: mapboxgl
+}) */
 const { cloudinary } = require('../cloudinary');
+
 
 // index 페이지로 가는 컨트롤러
 module.exports.index = async (req, res) => {
@@ -40,9 +51,17 @@ module.exports.createCampground = async (req, res, next) => {
     console.log(result);
     */
 
+    const geoData = await geocoder.forwardGeocode({
+        query: req.body.campground.location,
+        limit: 1
+    }).send()
+    // res.send(geoData.body.features[0].geometry.coordinates);
+
+
     const campground = new Campground(req.body.campground); // 데이터를 생성 create 할 때는 모델에 대한 인스턴스를 생성해서 보내는 걸 잊지말기 !!
     // 폼에서 name을 통해 campground라는 키의 값으로 묶어서(그룹화) 보냈기 때문에 그냥 req.body가 아닌 req.body.campground를 해줘야 
     // { title과 location을 사용 가능 }  + 자세한 건 console 출력 참고 
+    campground.geometry = geoData.body.features[0].geometry;
 
     campground.images = req.files.map(f => ({ url: f.path, filename: f.filename })); // cloudinary로 올리사진을 다시 사용하기 위해 path와 filename을 저장함 
 

@@ -18,16 +18,24 @@ const sample = array => array[Math.floor(Math.random() * array.length)];
 
 const seedDB = async () => { // 데이터베이스 초기화 후 50개의 랜덤 시드를 생성
     await Campground.deleteMany({});
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 200; i++) {
         const random1000 = Math.floor(Math.random() * 1000);
         const price = Math.floor(Math.random() * 20) + 10;
         const camp = new Campground({
+            // Your user ID
             author: "64d477b5f3d2cf2b19b4165b",
             location: `${cities[random1000].city}, ${cities[random1000].state}`,
             title: `${sample(descriptors)} ${sample(places)}`,
+            geometry: {
+                type: "Point",
+                coordinates: [
+                    cities[random1000].longitude,
+                    cities[random1000].latitude
+                ]
+            },
             images: [
                 {
-                    url: 'https://res.cloudinary.com/dp3jvo1po/image/upload/v1692974888/YelpCamp/ktmqcesukmohkjpsly98.jpg',
+                    url: 'https://res.cloudinary.com/dp3jvo1po/image/upload/v1693404912/YelpCamp/osecoc5p1rets5d1qewo.jpg',
                     filename: 'YelpCamp/ktmqcesukmohkjpsly98'
                 }
             ],

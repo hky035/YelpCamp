@@ -1,11 +1,17 @@
 <% layout('../layouts/boilerplate') %>
     <!-- 이것이 잘 작동된다면 아래의 콘텐츠 코드들은 layout의  <.%-body %>로 전달된다 -->
+    <div id="map" style="width : 100%; height : 500px"></div>
     <h1>All Campgorund</h1>
     <% for(let campground of campgrounds){ %>
         <div class="card mb-3">
             <div class="row">
                 <div class="col-md-4">
-                    <img class="img-fluid" alt="" src="<%= campground.images[0].url %>">
+                    <% if(campground.images.length){ %>
+                        <img class="img-fluid" alt="" src="<%= campground.images[0].url %>">
+                        <% }else{ %>
+                            <img class="img-fluid" alt=""
+                                src="https://res.cloudinary.com/dp3jvo1po/image/upload/v1692974888/YelpCamp/ktmqcesukmohkjpsly98.jpg">
+                            <% } %>
                 </div>
                 <div class="col-md-8">
                     <div class="card-body">
@@ -28,3 +34,8 @@
         </div>
 
         <% } %>
+   <script>
+        const mapToken = '<%- process.env.MAPBOX_TOKEN %>';
+        const campgrounds = { features : <%- JSON.stringify(campgrounds)%>}
+    </script>
+            <script src="/javascripts/clusterMap.js"></script>
