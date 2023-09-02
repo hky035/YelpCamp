@@ -14,6 +14,10 @@ ImageSchema.virtual('thumnail').get(function () { // 가상 특성 thumnail을 I
     // 이렇게 가상 속성을 설정했으니 edit.ejs에서 img src = img.url이 아닌 img.thumnail을 사용
 });
 
+const opts = { toJSON: { virtuals: true } };
+// 각 camp마다 cluster map에서 클릭했을 때 팝업메시지를 띄우기 위해 virtual 속성을 사용하는데, campground 출력 시 virtual 속성이 포함이 안 된채로 출력되는 것을
+// 막기 위해 mongoose에 스키마 생성시 옵션을 주어 전달함.
+
 const CampgroundSchema = new Schema({ //mongoose.Schema 대신 Schema로 쓸 수 있게 됨
     title: String,
     images: [ImageSchema],
@@ -41,6 +45,16 @@ const CampgroundSchema = new Schema({ //mongoose.Schema 대신 Schema로 쓸 수
         type: Schema.Types.ObjectId,
         ref: 'Review'
     }]
+}, opts);
+
+
+CampgroundSchema.virtual('properties.popUpMarkUp').get(function () { // 가상 특성 thumnail을 ImageSchma에 추가. thumnail 속성이 사용되면 이미지 크기를 수정하는 로직이 실행
+    // clusterMap에서 지점을 클릭했을 때 각 캠프그라운드 show 페이지로 넘어가기 위해
+    // this is for moving a show page of each camp, when clinet click the camp on the cluster Map.
+    // return "I am Popup Text!!!"
+    return `
+    <strong><a href="/campgrounds/${this._id}">${this.title}</a></strong>
+    <p>${this.description.substring(0, 20)}...</p>`
 });
 
 CampgroundSchema.post('findOneAndDelete', async function (doc) {

@@ -102,10 +102,11 @@ map.on('load', () => {
     // the location of the feature, with
     // description HTML from its properties.
     map.on('click', 'unclustered-point', (e) => {
+        /* console.log(e.features[0]);
+        원래는 e.featrues[0]을 출력해보면 proterties에 아무것도 출력이 안 되었는데.
+        mongoose에서 virtual로 propertes.popUpMarkUp 속성을 추가해주어 MAPBOX가 자동적으로 proprties라는 키를 찾아 정보를 가져가는 것 */
+        const { popUpMarkUp } = e.features[0].properties;
         const coordinates = e.features[0].geometry.coordinates.slice();
-        const mag = e.features[0].properties.mag;
-        const tsunami =
-            e.features[0].properties.tsunami === 1 ? 'yes' : 'no';
 
         // Ensure that if the map is zoomed out such that
         // multiple copies of the feature are visible, the
@@ -116,9 +117,7 @@ map.on('load', () => {
 
         new mapboxgl.Popup()
             .setLngLat(coordinates)
-            .setHTML(
-                `<h3>campground</h3>`
-            )
+            .setHTML(popUpMarkUp)
             .addTo(map);
     });
 
