@@ -101,6 +101,10 @@ app.use("/campgrounds", campgroundRoutes);
 app.use("/campgrounds/:id/reviews", reviewRoutes);
 app.use("/", userRoutes);
 
+app.get('/', (req, res) => {
+    res.render('home');
+})
+
 /* 
 app.get('/fakeUser', async (req, res) => {
     const user = new User({ email: 'testmail@gmail.com', username: 'colttt' }); // passport-local-mongoose를 플러그인했으니 username과 password도 자동으로 추가되어 사용 가능

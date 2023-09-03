@@ -4,7 +4,7 @@
     <div class="container">
         <div class="row">
             <div class="col-6">
-                <div id='map' style='width: 400px; height: 300px;'></div>
+
                 <div class="card mb-3">
                     <div id="campgroundCarousel" class="carousel slide">
                         <div class="carousel-inner">
@@ -64,6 +64,7 @@
 
             </div>
             <div class="col-6">
+                <div id='map' class="mb-3"></div>
                 <% if(currentUser){ %>
 
                     <h2 class="mb-3">Leave a Review</h2>
@@ -130,7 +131,8 @@
     <script>
         const mapToken = '<%- process.env.MAPBOX_TOKEN %>';
         const campground = <%- JSON.stringify(campground) %>
-        console.log("campground : ", campground.geometry);
+            // 해당 구문 사용을 위해 select language를 html에서 ejs로 변경해줘야함.
+            console.log("campground : ", campground.geometry);
     </script>
     <script src="/javascripts/showPageMap.js"></script>
     <!-- js나 css를 파일로 src로 가져올 경우 ejs 구문은 ejs가 인식을 못하고 건너뛴다.
