@@ -1,6 +1,6 @@
 const { campgroundSchema } = require('./schemas')
 const { reviewSchema } = require('./schemas')
-const { ExpressError } = require('./utils/ExpressError');
+const ExpressError = require('./utils/ExpressError');
 const Campground = require('./models/campground');
 const Review = require('./models/review');
 
@@ -28,6 +28,7 @@ module.exports.isLoggedIn = (req, res, next) => {
 module.exports.validateCampground = (req, res, next) => {
     // 유효성검사 스키마(campgroundSchema)는 shemas.js 파일에 만들어 exports
     const { error } = campgroundSchema.validate(req.body);
+    console.log(req.body);
     if (error) {
         const msg = error.details.map(el => el.message).join(','); //error의 details는 배열인데 쉼표를 기준으로 새로운 배열로 매핑? 체크
         throw new ExpressError(msg, 400);

@@ -16,6 +16,8 @@ const ExpressError = require('./utils/ExpressError');
 const passport = require('passport'); // 기본 passport를 require해야 여러 인증 전략에 플러그인할 ㅅ ㅜ있따.
 const LocalStrategy = require('passport-local');
 const User = require('./models/user.js');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
 
 
 /* 주석처리한 것들은 각 라우트를 파일로 옮기게 되면서 더이상 여기에 작성할 필요가 없게된 코드들임
@@ -55,13 +57,19 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public'))); // public 폴더를 통한 정적 assets 사용하기. 
 // express.static() : img, js와 같은 정적 asset을 사용할 수 있는 경로를 설정하는 메서드 
 
+app.use(mongoSanitize({
+    replcaeWith: '_' // replace 없이 mongoSanitize()만 쓰면 아예 쿼리에서 $나 .같은 키가 포함된 값은 다 삭제.  consogle.log(req.query)에서 확인
+}))
+
 const sessionConfig = {
+    name: 'session', // 쿠키의 이름 설정, 설정하지 않고 기본 이름은 connection.sid 쓰면 누가 크롤링해가면 답 없다.
     secret: 'thisshoutbebetterscrete',
     resave: false,
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
         //http only(일종의 보안) 플래그가 체크되면, 클라이언트 측에서 스크립트에서 해당 쿠키에 접근할 수 없게 된다. 또한, xss에 결함 등을 발생시키는 링크에 접근 시 브라우저가 쿠키 유출을 방지한다.
+        // secure : true, //secure 상태인 http => https인 요청에만 쿠키를 가질 수 있다. 우리는 local 환경이기 때문에(local은 http) 일단 secure은 주석처리, 실제 배포시에는 true로 함
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,  // 쿠키의 만료 기한, 밀리 세컨드로 나오기 때문에 만약 일주일이 쿠키의 만료기한이라면, 일주일을 밀리세컨드로 더해줘야함
         maxAge: 1000 * 60 * 60 * 24 * 7 // 만료기한의 최대치 
         // 세션의 만료기한 : 예로 우리가 일주일로 설정하였으면 로그인이 최대 일주일동안 유지되는 것 !
@@ -71,6 +79,60 @@ app.use(session(sessionConfig));
 app.use(flash());
 // 동작원리
 // req.flash에 키-밸류 쌍을 전달해 플래쉬를 생성
+
+/* app.use(helmet({
+    contentSecurityPolicy: false
+})); */
+//helmet()을 use 함으로써 helmet에 있는 11개의 메소드(미들웨어)들을 개별 use하는게 아니라 한꺼번에 사용할 수 있게 됨. 
+//그 중 contentSercurityPolicy 속성때문에 map이나 image가 보이지 않는 오류가 있어 해당 특성은 인자로 전달해 false 상태로 한다.
+//POSTMAN으로 요청 보낸후 header 확인해보면 여러 헤더 추가된 것을 알 수 있는데 이것들이 일단 보안을 더 강화해주었다고 생각하면 된다. 자세한 내용은 공식문서 참고
+
+app.use(helmet());
+const scriptSrcUrls = [ // 이 밑의 코드들은 우리가 사용할 수 있는 출처에 해당된 것들을 모아놓은 것. contentSercurityPolicy의 옵션임
+    "https://stackpath.bootstrapcdn.com",
+    "https://api.tiles.mapbox.com",
+    "https://api.mapbox.com",
+    "https://kit.fontawesome.com",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+];
+const styleSrcUrls = [
+    "https://kit-free.fontawesome.com",
+    "https://stackpath.bootstrapcdn.com",
+    "https://api.mapbox.com",
+    "https://api.tiles.mapbox.com",
+    "https://fonts.googleapis.com",
+    "https://use.fontawesome.com",
+    "https://cdn.jsdelivr.net"
+];
+const connectSrcUrls = [
+    "https://api.mapbox.com",
+    "https://*.tiles.mapbox.com",
+    "https://events.mapbox.com",
+];
+const fontSrcUrls = [];
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: [],
+            connectSrc: ["'self'", ...connectSrcUrls],
+            scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+            styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+            workerSrc: ["'self'", "blob:"],
+            childSrc: ["blob:"],
+            objectSrc: [],
+            imgSrc: [
+                "'self'",
+                "blob:",
+                "data:",
+                "https://res.cloudinary.com/dp3jvo1po/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT! 
+                "https://images.unsplash.com",
+            ],
+            fontSrc: ["'self'", ...fontSrcUrls],
+        },
+    })
+);
+
 
 app.use(passport.initialize()); // 공식문서 보기
 app.use(passport.session()); // 참고로 passport.session()이 session() 미들웨어보다 나중에 작성되어야 한다.
@@ -82,6 +144,9 @@ passport.deserializeUser(User.deserializeUser()); // 세션에서 저장할지 �
 
 app.use((req, res, next) => { // 라우트 핸들러 앞에 작성되어야함
     // console.log(req.session);
+
+    console.log(req.query);  // mongo-sanitize 점검을 위해 사용, SQL INJECTION 방지
+
 
     //  이 코드 혹은 isLoggedIn에 req.session.returnTo = req.original 코드를 작성. 둘 중 하나 선택
     if (!['/login', '/'].includes(req.originalUrl)) {
@@ -129,8 +194,8 @@ app.all('*', (req, res, next) => { // 위의 주소가 아닌 다른 요청들�
 app.use((err, req, res, next) => {
     const { statusCode = 500 } = err;
     if (!err.message) err.message = "Oh No, Something is wrong";
-    console.dir(err);
-    console.log(err.name);
+    /* console.dir(err);
+    console.log(err.name); */
     res.status(statusCode).render('error', { err });
 
 })
