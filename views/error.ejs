@@ -9,18 +9,18 @@
 
                     <% if (process.env.NODE_ENV !=="production" ) { %>
                         <!-- // 환경이 production(배포,사용자 입장)이 아닐 떄, 즉 개발환경일때만 <p -->
-                        class="overflow-auto">
-                        <%= err.stack %>
-                            </p>
-                            <% } %>
-                                <!-- 만약 제작 상태인 우리가 배포상태인 채로 테스트하고 싶으면  terminal에 
+                        <p class="overflow-auto">
+                            <%= err.stack %>
+                        </p>
+                        <% } %>
+                            <!-- 만약 제작 상태인 우리가 배포상태인 채로 테스트하고 싶으면  terminal에 
                             NODE_ENV=production node app.js 쓰면 배포 상태로 서버를 여는 것임 -->
 
-                                <hr>
-                                <p class="mb-0">Whenever you need to, be sure to use margin utilities to keep things
-                                    nice
-                                    and tidy.
-                                </p>
+                            <hr>
+                            <p class="mb-0">Whenever you need to, be sure to use margin utilities to keep things
+                                nice
+                                and tidy.
+                            </p>
                 </div>
             </div>
         </div>

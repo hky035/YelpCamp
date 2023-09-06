@@ -18,6 +18,7 @@ const LocalStrategy = require('passport-local');
 const User = require('./models/user.js');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
+const MongoStore = require('connect-mongo');
 
 
 /* 주석처리한 것들은 각 라우트를 파일로 옮기게 되면서 더이상 여기에 작성할 필요가 없게된 코드들임
@@ -36,7 +37,10 @@ const reviewRoutes = require('./routes/review');
 const userRoutes = require('./routes/users');
 
 // mongoose.connect
-mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp', {
+// 원래 로컬 주소 : 'mongodb://127.0.0.1:27017/yelp-camp'
+// 우리는 지금 배포하는 것이 아니니 일단은 로컬 서버로 제작하고, 나중엔 mongo atals를 이용한 dbUrl을 넣는다.
+const dbUrl = 'mongodb://127.0.0.1:27017/yelp-camp';
+mongoose.connect(dbUrl, {
     useUnifiedTopology: true
 });
 const db = mongoose.connection;
@@ -61,7 +65,23 @@ app.use(mongoSanitize({
     replcaeWith: '_' // replace 없이 mongoSanitize()만 쓰면 아예 쿼리에서 $나 .같은 키가 포함된 값은 다 삭제.  consogle.log(req.query)에서 확인
 }))
 
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    touchAfter: 24 * 60 * 60,
+    crypto: {
+        secret: 'thisshouldbeabettersecret'
+    }
+});
+
+store.on('error', function (e) {
+    console.log('SESSION STORE ERROR', e)
+})
+
 const sessionConfig = {
+    store, // 앞서 설정한 mongo-connect로 mongo database를 세션 저장소로 쓴다. 우리는 원래 메모리를 세션 저장소로 썼다. 
+    // 따라서, js를 저장하면 새로고침 되면서 세션 저장소에 있던 것이 사라져 로그인을 다시 해야 됬는데, 세션 저장소를 mongo로 사용함으로써 js 저장 시 새로고침이나 창을 끄고,
+    // 다시 페이지를 열었을 때도 만료기한 내라면 로그인이 유지되어있따.
+    // db에서 sessions 콜렉션이 추가된 것을 확인할 수 있따.
     name: 'session', // 쿠키의 이름 설정, 설정하지 않고 기본 이름은 connection.sid 쓰면 누가 크롤링해가면 답 없다.
     secret: 'thisshoutbebetterscrete',
     resave: false,
@@ -145,7 +165,7 @@ passport.deserializeUser(User.deserializeUser()); // 세션에서 저장할지 �
 app.use((req, res, next) => { // 라우트 핸들러 앞에 작성되어야함
     // console.log(req.session);
 
-    console.log(req.query);  // mongo-sanitize 점검을 위해 사용, SQL INJECTION 방지
+    // console.log(req.query);  // mongo-sanitize 점검을 위해 사용, SQL INJECTION 방지
 
 
     //  이 코드 혹은 isLoggedIn에 req.session.returnTo = req.original 코드를 작성. 둘 중 하나 선택
